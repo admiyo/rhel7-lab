@@ -1,31 +1,29 @@
-- hosts: localhost
-  connection: local
-  tasks:
-    - name: Generate phpipam Token
-      uri:
-        url: "http://{{ php_ipam_hostname }}/api/{{ php_ipam_api_user }}/user/"
-        method: POST
-        user: "{{ php_ipam_username }}"
-        password: "{{ php_ipam_password }}"
-        force_basic_auth: true
-        status_code: 200
-      register: session
+---
+- name: Generate phpipam Token
+  uri:
+    url: "http://{{ php_ipam_hostname }}/api/{{ php_ipam_api_user }}/user/"
+    method: POST
+    user: "{{ php_ipam_username }}"
+    password: "{{ php_ipam_password }}"
+    force_basic_auth: true
+    status_code: 200
+  register: session
 
-    - debug: var=session.json.data.token
-      when: debug is defined
+- debug: var=session.json.data.token
+  when: debug is defined
 
-    - name: Get IP
-      uri:
-        url: "http://{{ php_ipam_hostname }}/api/demolab/addresses/first_free/{{ php_ipam_subnet_id }}/"
-        method: POST
-        headers:
-          phpipam-token: "{{ session.json.data.token }}"
-        status_code: 201
-      register: get_ip
+- name: Get IP
+  uri:
+    url: "http://{{ php_ipam_hostname }}/api/demolab/addresses/first_free/{{ php_ipam_subnet_id }}/"
+    method: POST
+    headers:
+      phpipam-token: "{{ session.json.data.token }}"
+    status_code: 201
+  register: get_ip
 
-    - debug: var=get_ip 
-      when: debug is defined
+- debug: var=get_ip 
+  when: debug is defined
 
-    - name: Set ip_address
-      set_fact:
-        ip_address: get_ip.json.data
+- name: Set ip_address
+  set_fact:
+    ip_address: get_ip.json.data
