@@ -1,17 +1,16 @@
 ---
-rhv_template: "rhel74_template_u2"
-rhv_cluster: "Default"
+rhv_template: "CLOUDSA-template-rhel74"
+rhv_cluster: "RHHI-Hypervisors"
 my_custom_script: |
   output: {all: '| tee -a /var/log/cloud-init-output.log'}
   runcmd:
    - /usr/bin/echo "DEVICE=eth0" > /etc/sysconfig/network-scripts/ifcfg-eth0
    - /usr/bin/echo "BOOTPROTO=none" >> /etc/sysconfig/network-scripts/ifcfg-eth0
    - /usr/bin/echo "IPADDR={{ ip_address }}" >> /etc/sysconfig/network-scripts/ifcfg-eth0
-   - /usr/bin/echo "NETMASK=255.255.255.0" >> /etc/sysconfig/network-scripts/ifcfg-eth0
-   - /usr/bin/echo "GATEWAY=172.16.10.1" >> /etc/sysconfig/network-scripts/ifcfg-eth0
-   - /usr/bin/echo "DNS1=172.16.10.11" >> /etc/sysconfig/network-scripts/ifcfg-eth0
-   - /usr/bin/echo "DNS2=172.16.10.12" >> /etc/sysconfig/network-scripts/ifcfg-eth0
-   - /usr/bin/echo "SEARCH=pwc.umbrella.local" >> /etc/sysconfig/network-scripts/ifcfg-eth0
+   - /usr/bin/echo "NETMASK=255.255.254.0" >> /etc/sysconfig/network-scripts/ifcfg-eth0
+   - /usr/bin/echo "GATEWAY=10.11.165.254" >> /etc/sysconfig/network-scripts/ifcfg-eth0
+   - /usr/bin/echo "DNS1=10.11.165.151" >> /etc/sysconfig/network-scripts/ifcfg-eth0
+   - /usr/bin/echo "SEARCH=demo.rdu.salab.redhat.com" >> /etc/sysconfig/network-scripts/ifcfg-eth0
    - /sbin/ifdown eth0
    - /sbin/ifup eth0
    - /usr/bin/hostnamectl set-hostname "{{ vm_name }}"
