@@ -120,6 +120,7 @@
       resources: "{{ service_template_tags.json.resources }}"
     body_format: json
   register: service_assign
+  when: service_template_tags.json.subcount > 0
 
 - debug: var=service_assign
   when: debug is defined
@@ -140,6 +141,7 @@
       resources: "{{ service_template_tags.json.resources }}"
     body_format: json
   register: uri_assign_tag
+  when: service_template_tags.json.subcount > 0
 
 - debug: var=uri_assign_tag
   when: debug is defined
