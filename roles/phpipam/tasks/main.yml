@@ -26,4 +26,4 @@
 
 - name: Set ip_address
   set_fact:
-    ip_address: get_ip.json.data
+    ip_address: "{{ get_ip.json.data }}"
