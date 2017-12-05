@@ -1,0 +1,6 @@
+---
+php_ipam_hostname: ipam.rdu.salab.redhat.com
+php_ipam_username: Admin
+php_ipam_password: tahder1!
+php_ipam_api_user: demolab
+php_ipam_subnet_id: 27
