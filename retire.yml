@@ -1,0 +1,77 @@
+
+- hosts: localhost
+  connection: local
+  tasks:
+
+    - set_fact:
+        vm_names: ['admiyo1234','admiyo1235']
+        vm_domain: demo.rdu.salab.redhat.com 
+
+    - debug: var=vm_names
+ 
+
+    - name: Source Vault
+      include_vars: vault.yml
+
+    # Using API Because ipa_host module does not support update DNS
+    # Also we don't have zone info for ipa_dnsrecord
+
+    - name: Generate IPA Session Cookie
+      uri:
+        url: "https://{{ ipa_hostname }}/ipa/session/login_password"
+        validate_certs: no
+        method: POST
+        status_code: 200
+        headers:
+          Content-Type: "application/x-www-form-urlencoded"
+          Accept: "text/plain"
+          Referer: "https://{{ ipa_hostname }}/ipa"
+        body: "user={{ ipa_username }}&password={{ ipa_password }}"
+      register: session
+      
+
+    - debug: var=session
+      when: debug is defined
+
+    - name: Remove Host from IPA & Update DNS
+      uri:
+        url: "https://{{ ipa_hostname }}/ipa/session/json"
+        validate_certs: no
+        method: POST
+        status_code: 200
+        headers:
+          Cookie: "{{ session.set_cookie }}"
+          Accept: "application/json"
+          Referer: "https://{{ ipa_hostname }}/ipa"
+        body:
+          method: host_del
+          params:
+          - - "{{ item }}.{{vm_domain}}"
+          - updatedns: true
+        body_format: json
+      register: host_del
+      with_items:  "{{ vm_names }}"        
+
+    - debug: var=host_del
+      when: debug is defined
+
+#    - fail:
+#        msg: "Delete Host in IPA failed! ({{ host_del.json.error.message }})"
+#      when: not(host_del.json.error is none)
+
+    - name: Remove Host from RHV
+      ovirt_vms:
+        auth:
+          username: "{{ rhv_username }}"
+          password: "{{ rhv_password }}"
+          url: "https://{{ rhv_hostname }}/ovirt-engine/api"
+          insecure: true
+        state: absent
+        name: "{{ item }}.{{vm_domain}}"
+        cluster: Default
+      with_items:  "{{ vm_names }}"        
+
+      register: vms
+
+    - debug: var=vms
+      when: debug is defined
