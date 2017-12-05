@@ -1,0 +1,76 @@
+---
+- name: Generate Host OTP
+  shell: /usr/bin/tr -d -c "a-zA-Z0-9" 2> /dev/null < /dev/urandom | /usr/bin/head -c 20 2> /dev/null
+  register: ipa_otp
+
+- set_fact:
+    ipa_otp: "{{ ipa_otp.stdout }}"
+
+- debug: var=ipa_otp
+  when: debug is defined
+
+- name: Generate IPA Session Cookie
+  uri:
+    url: "https://{{ ipa_hostname }}/ipa/session/login_password"
+    validate_certs: no
+    method: POST
+    status_code: 200
+    headers:
+      Content-Type: "application/x-www-form-urlencoded"
+      Accept: "text/plain"
+      Referer: "https://{{ ipa_hostname }}/ipa"
+    body: "user={{ ipa_username }}&password={{ ipa_password }}"
+  register: session
+
+- debug: var=session
+  when: debug is defined
+
+- name: Create Host in IPA
+  uri:
+    url: "https://{{ ipa_hostname }}/ipa/session/json"
+    validate_certs: no
+    method: POST
+    status_code: 200
+    headers:
+      Cookie: "{{ session.set_cookie }}"
+      Accept: "application/json"
+      Referer: "https://{{ ipa_hostname }}/ipa"
+    body:
+      method: host_add
+      params:
+      - - "{{ vm_name }}."
+      - ip_address: "{{ ip_address }}"
+    body_format: json
+  register: host_add
+
+- debug: var=host_add
+  when: debug is defined
+
+- fail:
+    msg: "Create Host in IPA failed! ({{ host_add.json.error.message }})"
+  when: not(host_add.json.error is none)
+
+- name: Assign OTP to Host
+  uri:
+    url: "https://{{ ipa_hostname }}/ipa/session/json"
+    validate_certs: no
+    method: POST
+    status_code: 200
+    headers:
+      Cookie: "{{ session.set_cookie }}"
+      Accept: "application/json"
+      Referer: "https://{{ ipa_hostname }}/ipa"
+    body:
+      method: host_mod
+      params:
+      - - "{{ vm_name }}"
+      - userpassword: "{{ ipa_otp }}"
+    body_format: json
+  register: host_mod
+
+- debug: var=host_mod
+  when: debug is defined
+
+- fail:
+    msg: "Assign OTP to Host failed! ({{ host_mod.json.error.message }})"
+  when: not(host_mod.json.error is none)

@@ -1,0 +1,24 @@
+---
+rhv_template: "rhel74_template_u2"
+rhv_cluster: "Default"
+my_custom_script: |
+  output: {all: '| tee -a /var/log/cloud-init-output.log'}
+  runcmd:
+   - /usr/bin/echo "DEVICE=eth0" > /etc/sysconfig/network-scripts/ifcfg-eth0
+   - /usr/bin/echo "BOOTPROTO=none" >> /etc/sysconfig/network-scripts/ifcfg-eth0
+   - /usr/bin/echo "IPADDR={{ ip_address }}" >> /etc/sysconfig/network-scripts/ifcfg-eth0
+   - /usr/bin/echo "NETMASK=255.255.255.0" >> /etc/sysconfig/network-scripts/ifcfg-eth0
+   - /usr/bin/echo "GATEWAY=172.16.10.1" >> /etc/sysconfig/network-scripts/ifcfg-eth0
+   - /usr/bin/echo "DNS1=172.16.10.11" >> /etc/sysconfig/network-scripts/ifcfg-eth0
+   - /usr/bin/echo "DNS2=172.16.10.12" >> /etc/sysconfig/network-scripts/ifcfg-eth0
+   - /usr/bin/echo "SEARCH=pwc.umbrella.local" >> /etc/sysconfig/network-scripts/ifcfg-eth0
+   - /sbin/ifdown eth0
+   - /sbin/ifup eth0
+   - /usr/bin/hostnamectl set-hostname "{{ vm_name }}"
+   - /usr/sbin/ipa-client-install -w "{{ ipa_otp }}" --mkhomedir -U
+   - /usr/bin/firewall-offline-cmd --zone=public --add-service ssh
+   - /usr/bin/systemctl restart firewalld.service
+   - /usr/bin/systemctl enable sshd.service
+   - /usr/bin/systemctl start sshd.service
+   - /usr/bin/systemctl stop cloud-init.service
+   - /usr/bin/systemctl disable cloud-init.service

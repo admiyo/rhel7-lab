@@ -1,0 +1,145 @@
+---
+- name: Lookup CloudForms VM via uid_ems
+  uri:
+    url: "https://{{ cfme_hostname }}/api/vms?filter[]=uid_ems={{ vm.id }}&expand=resources"
+    validate_certs: false
+    method: GET
+    user: "{{ cfme_username }}"
+    password: "{{ cfme_password }}"
+    headers:
+      #X-Auth-Token: "{{ manageiq.api_token }}"
+      Content-Type: "application/json"
+    status_code: 200
+    body:
+      action: refresh
+    body_format: json
+  register: uri_lookup_vm
+  until: uri_lookup_vm.json.subcount > 0
+  retries: 10
+  delay: 10
+
+- debug: var=uri_lookup_vm
+  when: debug is defined
+
+- debug: var=uri_lookup_vm.json.resources[0].id
+  when: debug is defined
+
+- name: Add VM to Service
+  uri:
+    url: "https://{{ cfme_hostname }}/api/{{ manageiq.service }}"
+    validate_certs: false
+    method: POST
+    user: "{{ cfme_username }}"
+    password: "{{ cfme_password }}"
+    headers:
+      #X-Auth-Token: "{{ manageiq.api_token }}"
+      Content-Type: "application/json"
+    status_code: 200
+    body:
+      action: add_resource
+      resource: "{ \"resource\": { \"href\": \"/api/vms/{{ uri_lookup_vm.json.resources[0].id }}\" } }"
+    body_format: json
+  register: uri_add_vm
+
+- debug: var=uri_add_vm
+  when: debug is defined
+
+- set_fact:
+    today: "{{ lookup('pipe','date +%Y-%m-%d-%H-%M') }}"
+
+- debug: var=today
+  when: debug is defined
+
+- name: Update Service Name
+  uri:
+    url: "https://{{ cfme_hostname }}/api/{{ manageiq.service }}"
+    validate_certs: false
+    method: PUT
+    user: "{{ cfme_username }}"
+    password: "{{ cfme_password }}"
+    headers:
+      #X-Auth-Token: "{{ manageiq.api_token }}"
+      Content-Type: "application/json"
+    status_code: 200
+    body:
+      name: "{{ vm_name }} - Created on {{ today }}"
+    body_format: json
+  register: uri_update_name
+
+- debug: var=uri_update_name
+  when: debug is defined
+
+- name: Service Template Lookup (Catalog Item Lookup)
+  uri:
+    url: "https://{{ cfme_hostname }}/api/{{ manageiq.service }}"
+    validate_certs: false
+    method: GET
+    user: "{{ cfme_username }}"
+    password: "{{ cfme_password }}"
+    headers:
+      #X-Auth-Token: "{{ manageiq.api_token }}"
+      Content-Type: "application/json"
+    status_code: 200
+  register: service
+
+- debug: var=service
+  when: debug is defined
+
+- name: Query Tags from Service Template
+  uri:
+    url: "https://{{ cfme_hostname }}/api/service_templates/{{ service.json.service_template_id }}/tags"
+    validate_certs: false
+    method: GET
+    user: "{{ cfme_username }}"
+    password: "{{ cfme_password }}"
+    headers:
+      #X-Auth-Token: "{{ manageiq.api_token }}"
+      Content-Type: "application/json"
+    status_code: 200
+  register: service_template_tags
+
+- debug: var=service_template_tags.json.subcount
+  when: debug is defined
+
+- debug: var=service_template_tags.json.resources
+  when: debug is defined
+
+- name: Assign Tags to Service
+  uri:
+    url: "https://{{ cfme_hostname }}/api/{{ manageiq.service }}/tags"
+    validate_certs: false
+    method: POST
+    user: "{{ cfme_username }}"
+    password: "{{ cfme_password }}"
+    headers:
+      #X-Auth-Token: "{{ manageiq.api_token }}"
+      Content-Type: "application/json"
+    status_code: 200
+    body:
+      action: assign
+      resources: "{{ service_template_tags.json.resources }}"
+    body_format: json
+  register: service_assign
+
+- debug: var=service_assign
+  when: debug is defined
+
+- name: Add Tags to VM
+  uri:
+    url: "https://{{ cfme_hostname }}/api/vms/{{ uri_lookup_vm.json.resources[0].id }}/tags"
+    validate_certs: false
+    method: POST
+    user: "{{ cfme_username }}"
+    password: "{{ cfme_password }}"
+    headers:
+      #X-Auth-Token: "{{ manageiq.api_token }}"
+      Content-Type: "application/json"
+    status_code: 200
+    body:
+      action: assign
+      resources: "{{ service_template_tags.json.resources }}"
+    body_format: json
+  register: uri_assign_tag
+
+- debug: var=uri_assign_tag
+  when: debug is defined

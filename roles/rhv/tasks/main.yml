@@ -1,0 +1,30 @@
+---
+- name: Create VM
+  ovirt_vms:
+    auth:
+      username: "{{ rhv_username }}"
+      password: "{{ rhv_password }}"
+      url: "https://{{ rhv_hostname }}/ovirt-engine/api"
+      insecure: true
+    state: present
+    template: "{{ rhv_template }}"
+    name: "{{ vm_name }}"
+    cluster: "{{ rhv_cluster }}"
+    cloud_init:
+      custom_script: "{{ my_custom_script }}"
+  register: vm
+
+- debug: var=vm
+  when: debug is defined
+
+- name: Wait for SSH
+  wait_for:
+    host: "{{ ip_address }}"
+    port: 22
+    delay: 15
+    timeout: 320
+    state: started
+  register: wf
+
+- debug: var=wf
+  when: debug is defined

@@ -1,0 +1,19 @@
+---
+galaxy_info:
+  author: nasx
+  description: rhel7-lab - Add host to IdM, generate & assign OTP
+  company: Umbrella
+  license: Apache
+  issue_tracker_url:
+  github_branch:
+  min_ansible_version: 2.4
+  platforms:
+    name: EL
+    versions:
+      - 7
+  categories:
+    - cloudforms
+    - rhv
+    - idm
+    - satellite
+  dependencies: []

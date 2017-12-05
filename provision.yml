@@ -1,0 +1,10 @@
+---
+- name: Provision VM
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  roles:
+    - role: idm
+    - role: rhv
+    - { role: manageiq, when: manageiq is defined }
