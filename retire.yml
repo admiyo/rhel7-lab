@@ -1,14 +1,12 @@
-
 - hosts: localhost
   connection: local
   tasks:
 
     - set_fact:
         vm_names: ['admiyo1234','admiyo1235']
-        vm_domain: demo.rdu.salab.redhat.com 
+        vm_domain: demo.rdu.salab.redhat.com
 
     - debug: var=vm_names
- 
 
     - name: Source Vault
       include_vars: vault.yml
@@ -28,7 +26,7 @@
           Referer: "https://{{ ipa_hostname }}/ipa"
         body: "user={{ ipa_username }}&password={{ ipa_password }}"
       register: session
-      
+
 
     - debug: var=session
       when: debug is defined
@@ -50,14 +48,11 @@
           - updatedns: true
         body_format: json
       register: host_del
-      with_items:  "{{ vm_names }}"        
+      with_items:  "{{ vm_names }}"
 
     - debug: var=host_del
       when: debug is defined
 
-#    - fail:
-#        msg: "Delete Host in IPA failed! ({{ host_del.json.error.message }})"
-#      when: not(host_del.json.error is none)
 
     - name: Remove Host from RHV
       ovirt_vms:
@@ -69,7 +64,7 @@
         state: absent
         name: "{{ item }}.{{vm_domain}}"
         cluster: Default
-      with_items:  "{{ vm_names }}"        
+      with_items:  "{{ vm_names }}"
 
       register: vms
 
