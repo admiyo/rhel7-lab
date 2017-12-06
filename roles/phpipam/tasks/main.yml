@@ -8,6 +8,8 @@
   set_fact:
     hostnames: "{{ hostnames.split(',') }}"
 
+- debug: var=hostnames
+
 - name: Get Host Array Length
   set_fact:
     number_vms: "{{ hostnames | length }}"
