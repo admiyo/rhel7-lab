@@ -1,5 +1,5 @@
 ---
-- name: Create VM
+- name: Create VMs
   ovirt_vms:
     auth:
       username: "{{ rhv_username }}"
@@ -31,12 +31,12 @@
          - /usr/bin/systemctl start sshd.service
          - /usr/bin/systemctl stop cloud-init.service
          - /usr/bin/systemctl disable cloud-init.service
-  register: vm
+  register: vms
   with_together:
     - "{{ hostnames }}"
     - "{{ ip_addresses }}"
 
-- debug: var=vm
+- debug: var=vms
   when: debug is defined
 
 - name: Wait for SSH
