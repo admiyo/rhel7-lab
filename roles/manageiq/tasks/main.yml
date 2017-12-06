@@ -26,9 +26,9 @@
   set_fact:
     svc_url: "/api/{{ manageiq.service }}"
 
-#- name: Create href List
-#  set_fact:
-#    href_list: []
+- name: Create href List
+  set_fact:
+    href_list: []
 
 - name: Populate href List
   set_fact:
