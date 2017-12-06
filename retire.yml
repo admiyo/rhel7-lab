@@ -1,17 +1,71 @@
+
 - hosts: localhost
   connection: local
+  vars:
+    images:
+      - foo
+      - bar
+
   tasks:
 
     - set_fact:
-        ip_addresses: ['10.11.165.12','10.11.165.13']
-        vm_names: ['admiyo1','admiyo2']
         vm_domain: demo.rdu.salab.redhat.com
+        manageiq: {service: 99000000000031}
 
     - name: Source Vault
       include_vars: vault.yml
 
 
-    - debug: var=vm_names
+    - name: VM List Lookup from Service (Catalog Item Lookup)
+      uri:
+        url: "https://{{ cfme_hostname }}/api/services/{{ manageiq.service }}?expand=vms&attributes=vms.num_cpu"
+        validate_certs: false
+        method: GET
+        user: "{{ cfme_username }}"
+        password: "{{ cfme_password }}"
+        headers:
+          #X-Auth-Token: "{{ manageiq.api_token }}"
+          Content-Type: "application/json"
+        status_code: 200
+      register: service
+
+
+    - set_fact:
+         vm_records: "{{ service.json.vms }}"
+         ip_addresses: []
+         ip_v4_addresses: []
+
+    - name: Service VM Lookup (Catalog Item Lookup)
+      uri:
+        url: "{{ item.href }}?expand=vms&attributes=ipaddresses"
+        validate_certs: false
+        method: GET
+        user: "{{ cfme_username }}"
+        password: "{{ cfme_password }}"
+        headers:
+          #X-Auth-Token: "{{ manageiq.api_token }}"
+          Content-Type: "application/json"
+        status_code: 200
+      with_items: "{{ vm_records }}"
+      register: vm_data
+
+
+    - set_fact:
+        ip_addresses: "{{ ip_addresses }}  + {{ item.json.ipaddresses }}"
+      with_items: "{{  vm_data.results  }}"
+
+
+    - set_fact: ip_v4_pattern="(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"
+
+    - set_fact:
+        ip_v4_addresses: "{{ ip_v4_addresses }}  + ['{{ item }}']"
+      with_items: "{{  ip_addresses   }}"
+      when: item  | match ( ip_v4_pattern)
+
+    - debug:
+        msg="{{ item }}"
+      with_items: "{{  ip_v4_addresses  }}"
+
 
 
     - name: Generate phpipam Token
@@ -32,12 +86,9 @@
           phpipam-token: "{{ session.json.data.token }}"
         status_code: 200
       register: get_ip
-      with_items:  "{{ ip_addresses }}"
+      with_items:  "{{ ip_v4_addresses }}"
 
   
-    # Using API Because ipa_host module does not support update DNS
-    # Also we don't have zone info for ipa_dnsrecord
-
     - name: Generate IPA Session Cookie
       uri:
         url: "https://{{ ipa_hostname }}/ipa/session/login_password"
@@ -52,8 +103,6 @@
       register: session
 
 
-    - debug: var=session
-      when: debug is defined
 
     - name: Remove Host from IPA & Update DNS
       uri:
@@ -89,7 +138,6 @@
         name: "{{ item }}.{{vm_domain}}"
         cluster: Default
       with_items:  "{{ vm_names }}"
-
       register: vms
 
     - debug: var=vms
