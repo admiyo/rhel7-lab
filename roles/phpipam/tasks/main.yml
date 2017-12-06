@@ -1,4 +1,10 @@
 ---
+- debug: var=ip_addresses
+
+- name: Get Host Array Length
+  set_fact:
+    number_vms: "{{ hostnames | length }}"
+
 - name: Generate phpipam Token
   uri:
     url: "http://{{ php_ipam_hostname }}/api/{{ php_ipam_api_user }}/user/"
@@ -12,7 +18,7 @@
 - debug: var=session.json.data.token
   when: debug is defined
 
-- name: Get IP
+- name: Get IPs
   uri:
     url: "http://{{ php_ipam_hostname }}/api/demolab/addresses/first_free/{{ php_ipam_subnet_id }}/"
     method: POST
@@ -20,10 +26,13 @@
       phpipam-token: "{{ session.json.data.token }}"
     status_code: 201
   register: get_ip
+  with_sequence: count={{ number_vms }}
 
-- debug: var=get_ip 
-  when: debug is defined
+- debug: var=get_ip.results
 
-- name: Set ip_address
+- name: Build IP List
   set_fact:
-    ip_address: "{{ get_ip.json.data }}"
+    ip_addresses: "{{ ip_addresses }} + [ '{{ item.json.data }}' ]"
+  with_items: "{{ get_ip.results }}"
+
+- debug: var=ip_addresses

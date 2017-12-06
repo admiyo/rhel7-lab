@@ -8,23 +8,46 @@
       insecure: true
     state: present
     template: "{{ rhv_template }}"
-    name: "{{ vm_name }}"
+    name: "{{ item.0 }}"
     cluster: "{{ rhv_cluster }}"
     cloud_init:
-      custom_script: "{{ my_custom_script }}"
+      custom_script: |
+        output: {all: '| tee -a /var/log/cloud-init-output.log'}
+        runcmd:
+         - /usr/bin/echo "DEVICE=eth0" > /etc/sysconfig/network-scripts/ifcfg-eth0
+         - /usr/bin/echo "BOOTPROTO=none" >> /etc/sysconfig/network-scripts/ifcfg-eth0
+         - /usr/bin/echo "IPADDR={{ item.1 }}" >> /etc/sysconfig/network-scripts/ifcfg-eth0
+         - /usr/bin/echo "NETMASK=255.255.254.0" >> /etc/sysconfig/network-scripts/ifcfg-eth0
+         - /usr/bin/echo "GATEWAY=10.11.165.254" >> /etc/sysconfig/network-scripts/ifcfg-eth0
+         - /usr/bin/echo "DNS1=10.11.165.151" >> /etc/sysconfig/network-scripts/ifcfg-eth0
+         - /usr/bin/echo "SEARCH=demo.rdu.salab.redhat.com" >> /etc/sysconfig/network-scripts/ifcfg-eth0
+         - /sbin/ifdown eth0
+         - /sbin/ifup eth0
+         - /usr/bin/hostnamectl set-hostname "{{ item.0 }}"
+         - /usr/sbin/ipa-client-install -w "{{ ipa_otp }}" --mkhomedir -U
+         - /usr/bin/firewall-offline-cmd --zone=public --add-service ssh
+         - /usr/bin/systemctl restart firewalld.service
+         - /usr/bin/systemctl enable sshd.service
+         - /usr/bin/systemctl start sshd.service
+         - /usr/bin/systemctl stop cloud-init.service
+         - /usr/bin/systemctl disable cloud-init.service
   register: vm
+  with_together:
+    - "{{ hostnames }}"
+    - "{{ ip_addresses }}"
 
 - debug: var=vm
   when: debug is defined
 
 - name: Wait for SSH
   wait_for:
-    host: "{{ ip_address }}"
+    host: "{{ item }}"
     port: 22
     delay: 15
     timeout: 320
     state: started
   register: wf
+  with_items: "{{ ip_addresses }}"
 
 - debug: var=wf
   when: debug is defined

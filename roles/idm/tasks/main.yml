@@ -38,17 +38,20 @@
     body:
       method: host_add
       params:
-      - - "{{ vm_name }}."
-      - ip_address: "{{ ip_address }}"
+      - - "{{ item.0 }}."
+      - ip_address: "{{ item.1 }}"
     body_format: json
   register: host_add
+  with_together:
+    - "{{ hostnames }}"
+    - "{{ ip_addresses }}"
 
 - debug: var=host_add
   when: debug is defined
 
 - fail:
     msg: "Create Host in IPA failed! ({{ host_add.json.error.message }})"
-  when: not(host_add.json.error is none)
+  when: not(host_add.results[0].json.error is none)
 
 - name: Assign OTP to Host
   uri:
@@ -63,14 +66,15 @@
     body:
       method: host_mod
       params:
-      - - "{{ vm_name }}"
+      - - "{{ item }}"
       - userpassword: "{{ ipa_otp }}"
     body_format: json
   register: host_mod
+  with_items: "{{ hostnames }}"
 
 - debug: var=host_mod
   when: debug is defined
 
 - fail:
     msg: "Assign OTP to Host failed! ({{ host_mod.json.error.message }})"
-  when: not(host_mod.json.error is none)
+  when: not(host_mod.results[0].json.error is none)

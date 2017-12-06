@@ -5,7 +5,7 @@
   gather_facts: false
 
   roles:
-    - { role: phpipam, when: ip_address is not defined }
+    - role: phpipam
     - role: idm
     - role: rhv
-    - { role: manageiq, when: manageiq is defined }
+#    - { role: manageiq, when: manageiq is defined }
