@@ -14,7 +14,7 @@
 - name: Fail if number_vms > 5
   fail:
     msg: "Number of VMs too large: {{ number_vms }}"
-  when: number_vms > 5
+  when: {{ number_vms }} > 5
 
 - name: Generate phpipam Token
   uri:
