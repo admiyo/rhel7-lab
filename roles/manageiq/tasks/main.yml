@@ -26,13 +26,13 @@
   set_fact:
     svc_url: "/api/{{ manageiq.service }}"
 
-- name: Create href List
-  set_fact:
-    href_list: []
+#- name: Create href List
+#  set_fact:
+#    href_list: []
 
 - name: Populate href List
   set_fact:
-    href_list: "{{ href_list }} + [ {'href': {{ svc_url }}, 'resource': {'href': '/api/vms/{{ item.json.resources[0].id }}'}} ]"
+    href_list: "{{ href_list }} + [ {'href': '{{ svc_url }}', 'resource': {'href': '/api/vms/{{ item.json.resources[0].id }}'}} ]"
   with_items: "{{ uri_lookup_vms.results }}"
 
 - debug: var=href_list
