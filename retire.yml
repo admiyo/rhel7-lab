@@ -3,14 +3,38 @@
   tasks:
 
     - set_fact:
-        vm_names: ['admiyo1234','admiyo1235']
+        ip_addresses: ['10.11.165.12','10.11.165.13']
+        vm_names: ['admiyo1','admiyo2']
         vm_domain: demo.rdu.salab.redhat.com
-
-    - debug: var=vm_names
 
     - name: Source Vault
       include_vars: vault.yml
 
+
+    - debug: var=vm_names
+
+
+    - name: Generate phpipam Token
+      uri:
+        url: "http://{{ php_ipam_hostname }}/api/{{ php_ipam_api_user }}/user/"
+        method: POST
+        user: "{{ php_ipam_username }}"
+        password: "{{ php_ipam_password }}"
+        force_basic_auth: true
+        status_code: 200
+      register: session
+
+    - name: Delete IPs
+      uri:
+        url: "http://{{ php_ipam_hostname }}/api/demolab/addresses/{{ item }}/{{ php_ipam_subnet_id }}/"
+        method: DELETE
+        headers:
+          phpipam-token: "{{ session.json.data.token }}"
+        status_code: 200
+      register: get_ip
+      with_items:  "{{ ip_addresses }}"
+
+  
     # Using API Because ipa_host module does not support update DNS
     # Also we don't have zone info for ipa_dnsrecord
 
