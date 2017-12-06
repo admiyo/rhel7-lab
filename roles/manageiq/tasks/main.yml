@@ -35,7 +35,7 @@
     href_list: "{{ href_list }} + [ {'href': {{ svc_url }}, 'resource': {'href': '/api/vms/{{ item.json.resources[0].id }}'}} ]"
   with_items: "{{ uri_lookup_vms.results }}"
 
-- deubg: var=href_list
+- debug: var=href_list
 
 - name: Add VMs to Service
   uri:
