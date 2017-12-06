@@ -27,9 +27,8 @@
          - /usr/bin/hostnamectl set-hostname "{{ item.0 }}"
          - /usr/sbin/ipa-client-install -w "{{ ipa_otp }}" --mkhomedir -U
          - /usr/bin/firewall-offline-cmd --zone=public --add-service ssh
+         - /usr/bin/firewall-offline-cmd --zone=public --add-service ssh --permanent
          - /usr/bin/systemctl restart firewalld.service
-         - /usr/bin/systemctl enable sshd.service
-         - /usr/bin/systemctl start sshd.service
          - /usr/bin/systemctl stop cloud-init.service
          - /usr/bin/systemctl disable cloud-init.service
   register: vms
