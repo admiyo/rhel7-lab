@@ -2,6 +2,10 @@
 - debug: var=ip_addresses
 - debug: var=hostnames
 
+- name: Convert hostnames to JSON
+  set_fact:
+    hostnames: "{{ hostnames | to_json }}"
+
 - name: Get Host Array Length
   set_fact:
     number_vms: "{{ hostnames | length }}"
