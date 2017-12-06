@@ -1,12 +1,7 @@
 ---
-- debug: var=ip_addresses
-- debug: var=hostnames
-
-# Expect hostnames = "host1,host2,host3,etc"
-
-- name: Convert hostnames to Array
+- name: Convert host_csv to Array
   set_fact:
-    hostnames: "{{ hostnames.split(',') }}"
+    hostnames: "{{ host_csv.split(',') }}"
 
 - debug: var=hostnames
 
