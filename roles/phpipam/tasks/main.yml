@@ -2,9 +2,11 @@
 - debug: var=ip_addresses
 - debug: var=hostnames
 
-- name: Convert hostnames to JSON
+# Expect hostnames = "host1,host2,host3,etc"
+
+- name: Convert hostnames to Array
   set_fact:
-    hostnames: "{{ hostnames | to_json }}"
+    hostnames: "{{ hostnames.split(',') }}"
 
 - name: Get Host Array Length
   set_fact:
