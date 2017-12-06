@@ -50,9 +50,27 @@
     status_code: 200
     body:
       action: add_resource
-      resources: "{{ href_list }}"
+      resource: "{ \"resource\": { \"href\": \"/api/vms/{{ item.json.resources[0].id }}\" } }"
     body_format: json
   register: uri_add_vms
+  with_items: "{{ uri_lookup_vms.results }}"
+
+#- name: Add VMs to Service
+#  uri:
+#    url: "https://{{ cfme_hostname }}/api/{{ manageiq.service }}"
+#    validate_certs: false
+#    method: POST
+#    user: "{{ cfme_username }}"
+#    password: "{{ cfme_password }}"
+#    headers:
+#      #X-Auth-Token: "{{ manageiq.api_token }}"
+#      Content-Type: "application/json"
+#    status_code: 200
+#    body:
+#      action: add_resource
+#      resources: "{{ href_list }}"
+#    body_format: json
+#  register: uri_add_vms
 
 - debug: var=uri_add_vms
   when: debug is defined
@@ -75,7 +93,7 @@
       Content-Type: "application/json"
     status_code: 200
     body:
-      name: "{{ vm_name }} - Created on {{ today }}"
+      name: "Bulk Request - Created on {{ today }}"
     body_format: json
   register: uri_update_name
 
