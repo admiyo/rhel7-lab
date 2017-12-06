@@ -17,7 +17,7 @@
   until: uri_lookup_vms.json.subcount > 0
   retries: 10
   delay: 10
-  with_items: "{{ vms }}"
+  with_items: "{{ vms.results }}"
 
 - debug: var=uri_lookup_vms
   when: debug is defined
