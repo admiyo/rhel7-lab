@@ -1,0 +1,23 @@
+---
+- name: Query Service
+  uri:
+    url: "https://{{ cfme_hostname }}/api/{{ manageiq.service }}?expand=vms"
+    validate_certs: false
+    method: GET
+    user: "{{ cfme_username }}"
+    password: "{{ cfme_password }}"
+    headers:
+      #X-Auth-Token: "{{ manageiq.api_token }}"
+      Content-Type: "application/json"
+    status_code: 200
+  register: uri_lookup_vms
+  when: manageiq is defined
+
+- debug: var=uri_lookup_vms.json.vms
+  when: manageiq is defined
+
+- name: Set VM Names
+  set_fact:
+    vm_hostnames: "{{ vm_hostnames }} + [ '{{ item.name }}' ]"
+  with_items: "{{ uri_lookup_vms.json.vms }}"
+  when: manageiq is defined

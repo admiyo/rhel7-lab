@@ -1,0 +1,90 @@
+---
+- Name: Set Facts
+  set_fact:
+    vm_hostnames: []
+    vm_ips: []
+
+- include_tasks: "manageiq_hostnames.yml"
+  when: manageiq is defined
+
+- include_tasks: "build_hostnames.yml"
+  when: manageiq is not defined
+
+- debug: var=vm_hostnames
+
+- name: Set IP Addresses
+  set_fact:
+    vm_ips: "{{ vm_ips }} + ['{{ lookup('dig', '{{ item }}') }}']"
+  with_items: "{{ vm_hostnames }}"
+
+- debug: var=vm_ips
+
+- name: Delete VMs
+  ovirt_vms:
+    auth:
+      username: "{{ rhv_username }}"
+      password: "{{ rhv_password }}"
+      url: "https://{{ rhv_hostname }}/ovirt-engine/api"
+      insecure: true
+    state: absent
+    name: "{{ item }}"
+  with_items: "{{ vm_hostnames }}"
+
+- name: Generate phpipam Token
+  uri:
+    url: "http://{{ php_ipam_hostname }}/api/{{ php_ipam_api_user }}/user/"
+    method: POST
+    user: "{{ php_ipam_username }}"
+    password: "{{ php_ipam_password }}"
+    force_basic_auth: true
+    status_code: 200
+  register: session
+
+- debug: var=session.json.data.token
+  when: debug is defined
+
+- name: Free IPs
+  uri:
+    url: "http://{{ php_ipam_hostname }}/api/demolab/addresses/{{ item }}/{{ php_ipam_subnet_id }}/"
+    method: DELETE
+    headers:
+      phpipam-token: "{{ session.json.data.token }}"
+    status_code: 200
+  register: delete_ip
+  with_items: "{{ vm_ips }}"
+
+- name: Generate IPA Session Cookie
+  uri:
+    url: "https://{{ ipa_hostname }}/ipa/session/login_password"
+    validate_certs: no
+    method: POST
+    status_code: 200
+    headers:
+      Content-Type: "application/x-www-form-urlencoded"
+      Accept: "text/plain"
+      Referer: "https://{{ ipa_hostname }}/ipa"
+    body: "user={{ ipa_username }}&password={{ ipa_password }}"
+  register: session
+
+- debug: var=session
+  when: debug is defined
+
+- name: Delete Host from IPA
+  uri:
+    url: "https://{{ ipa_hostname }}/ipa/session/json"
+    validate_certs: no
+    method: POST
+    status_code: 200
+    headers:
+      Cookie: "{{ session.set_cookie }}"
+      Accept: "application/json"
+      Referer: "https://{{ ipa_hostname }}/ipa"
+    body:
+      method: host_del
+      params:
+      - - "{{ item }}"
+      - updatedns: true
+    body_format: json
+  register: host_del
+  with_items: "{{ vm_hostnames }}"
+
