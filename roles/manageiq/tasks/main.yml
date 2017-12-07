@@ -15,8 +15,8 @@
     body_format: json
   register: uri_lookup_vms
   until: uri_lookup_vms.json.subcount > 0
-  retries: 10
-  delay: 10
+  retries: 20
+  delay: 15
   with_items: "{{ vms.results }}"
 
 - debug: var=uri_lookup_vms
