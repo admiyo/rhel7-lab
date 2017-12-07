@@ -1,0 +1,12 @@
+---
+- name: Provision Tower Instance in SA Lab
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  
+  roles:
+    - role: phpipam
+    - role: idm
+    - role: rhv
+    - { role: manageiq, when: manageiq is defined }
+    - role: tower

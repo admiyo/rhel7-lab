@@ -1,2 +1,57 @@
 ---
+- debug: var=hostnames[0]
+- debug: var=ip_addresses[0]
 
+- name: Build Inventory
+  add_host:
+    hostname: "{{ hostnames[0] }}"
+    ansible_ssh_host: "{{ ip_addresses[0] }}"
+    groups: "tower"
+    ansible_ssh_user: "root"
+
+- name: Register with CDN
+  redhat_subscription:
+    username: "{{ rhsm_username }}"
+    password: "{{ rhsm_password }}"
+    state: present
+    pool_ids: "{{ rhsm_pool_id }}"
+  delegate_to: "{{ hostnames[0] }}"
+
+- name: Clean Slate Repositories
+  command: subscription-manager repos --disable='*'
+  creates: /tmp/.ansible_ran_clean_repos
+  delegate_to: "{{ hostnames[0] }}"
+
+- name: Enable Repositories
+  command: subscription-manager repos --enable rhel-7-server-rpms --enable rhel-7-server-extras-rpms
+  creates: /tmp/.ansible_ran_enable_repos
+  delegate_to: "{{ hostnames[0] }}"
+
+- name: Get Ansible Tower Installer
+  get_url:
+    url: "http://releases.ansible.com/ansible-tower/setup-bundle/ansible-tower-setup-bundle-{{ tower_version }}.el7.tar.gz"
+    dest: "/tmp/ansible-tower-setup-bundle-{{ tower_version }}.el7.tar.gz"
+  delegate_to: "{{ hostnames[0] }}"
+
+- name: Extract Ansible Tower Installer
+  unarchive:
+    src: "/tmp/ansible-tower-setup-bundle-{{ tower_version }}.el7.tar.gz"
+    dest: /tmp
+    remote_src: true
+    owner: root
+  delegate_to: "{{ hostnames[0] }}"
+
+- name: Copy Tower Inventory File
+  template:
+    src: templates/tower_inventory.j2
+    dest: "/tmp/ansible-tower-setup-bundle-{{ tower_version }}.el7/inventory"
+  delegate_to: "{{ hostnames[0] }}"
+
+- name: execute the tower installation
+  command: /tmp/ansible-tower-setup-bundle-{{ tower_version }}.el7/setup.sh
+  register: towerinstall
+  until: towerinstall.rc == 0
+  retries: 3
+  delay: 15
+  ignore_errors: yes
+  delegate_to: "{{ hostnames[0] }}"
