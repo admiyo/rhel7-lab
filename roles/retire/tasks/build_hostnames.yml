@@ -1,0 +1,20 @@
+---
+- name: Convert host_csv to Array
+  set_fact:
+    hostnames: "{{ host_csv.split(',') }}"
+
+- debug: var=hostnames
+
+- name: Get Host Array Length
+  set_fact:
+    number_vms: "{{ hostnames | length }}"
+
+- debug: var=number_vms
+
+- name: Fail if number_vms > 5
+  fail:
+    msg: "Number of VMs too large: {{ number_vms }}"
+  when: number_vms | int > 5
+
+- set_fact:
+    vm_hostnames: "{{ hostnames }}"
