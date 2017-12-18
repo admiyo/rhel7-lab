@@ -45,13 +45,19 @@
   with_together:
     - "{{ hostnames }}"
     - "{{ ip_addresses }}"
+  failed_when: "host_add.json.error is not none"
 
 - debug: var=host_add
   when: debug is defined
 
-- fail:
-    msg: "Create Host in IPA failed! ({{ host_add.json.error.message }})"
-  when: not(host_add.results[0].json.error is none)
+#- fail:
+#    msg: "Create Host in IPA failed! ({{ host_add.json.error.message }})"
+#  when: not(host_add.results[0].json.error is none)
+
+#- fail:
+#    msg: "Create Host in IPA failed! {{ host_add[{{ item }}].json.error.message }})"
+#  when: not(host_add.results[item].json.error is none)
+#  with_sequence: start=0 end="{{ number_vms }}"
 
 - name: Assign OTP to Host
   uri:
@@ -71,10 +77,11 @@
     body_format: json
   register: host_mod
   with_items: "{{ hostnames }}"
+  failed_when: "host_mod.json.error is defined"
 
-- debug: var=host_mod
+- debug: var=host_mod.results
   when: debug is defined
 
-- fail:
-    msg: "Assign OTP to Host failed! ({{ host_mod.json.error.message }})"
-  when: not(host_mod.results[0].json.error is none)
+#- fail:
+#    msg: "Assign OTP to Host failed! ({{ host_mod.json.error.message }})"
+#  when: not(host_mod.results[0].json.error is none)
