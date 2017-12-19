@@ -4,12 +4,14 @@
     hostnames: "{{ host_csv.split(',') }}"
 
 - debug: var=hostnames
+  verbosity: 2
 
 - name: Get Host Array Length
   set_fact:
     number_vms: "{{ hostnames | length }}"
 
 - debug: var=number_vms
+  verbosity: 2
 
 - name: Fail if number_vms > 5
   fail:

@@ -4,12 +4,14 @@
     hostnames: "{{ host_csv.split(',') }}"
 
 - debug: var=hostnames
+  verbosity: 2
 
 - name: Get Host Array Length
   set_fact:
     number_vms: "{{ hostnames | length }}"
 
 - debug: var=number_vms
+  verbosity: 2
 
 - name: Fail if number_vms > 5
   fail:
@@ -27,7 +29,7 @@
   register: session
 
 - debug: var=session.json.data.token
-  when: debug is defined
+  verbosity: 2
 
 - name: Get IPs
   uri:
@@ -40,6 +42,7 @@
   with_sequence: count={{ number_vms }}
 
 - debug: var=get_ip.results
+  verbosity: 2
 
 - name: Build IP List
   set_fact:
@@ -47,3 +50,4 @@
   with_items: "{{ get_ip.results }}"
 
 - debug: var=ip_addresses
+  verbosity: 2

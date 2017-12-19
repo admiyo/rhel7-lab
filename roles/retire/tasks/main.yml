@@ -11,6 +11,7 @@
   when: manageiq is not defined
 
 - debug: var=vm_hostnames
+  verbosity: 2
 
 - name: Set IP Addresses
   set_fact:
@@ -18,6 +19,7 @@
   with_items: "{{ vm_hostnames }}"
 
 - debug: var=vm_ips
+  verbosity: 2
 
 - name: Delete VMs
   ovirt_vms:
@@ -41,7 +43,7 @@
   register: session
 
 - debug: var=session.json.data.token
-  when: debug is defined
+  verbosity: 2
 
 - name: Free IPs
   uri:
@@ -67,7 +69,7 @@
   register: session
 
 - debug: var=session
-  when: debug is defined
+  verbosity: 2
 
 - name: Delete Host from IPA
   uri:

@@ -37,7 +37,7 @@
     - "{{ ip_addresses }}"
 
 - debug: var=vms
-  when: debug is defined
+  verbosity: 2
 
 - name: Wait for SSH
   wait_for:
@@ -50,4 +50,4 @@
   with_items: "{{ ip_addresses }}"
 
 - debug: var=wf
-  when: debug is defined
+  verbosity: 2
