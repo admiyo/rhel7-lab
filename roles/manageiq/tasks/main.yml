@@ -20,7 +20,7 @@
   with_items: "{{ vms.results }}"
 
 - debug: var=uri_lookup_vms
-  when: debug is defined
+  verbosity: 2
 
 - name: Set Service URL
   set_fact:
@@ -36,6 +36,7 @@
   with_items: "{{ uri_lookup_vms.results }}"
 
 - debug: var=href_list
+  verbosity: 2
 
 - name: Add VMs to Service
   uri:
@@ -73,13 +74,13 @@
 #  register: uri_add_vms
 
 - debug: var=uri_add_vms
-  when: debug is defined
+  verbosity: 2
 
 - set_fact:
     today: "{{ lookup('pipe','date +%Y-%m-%d-%H-%M') }}"
 
 - debug: var=today
-  when: debug is defined
+  verbosity: 2
 
 - name: Update Service Name
   uri:
@@ -98,7 +99,7 @@
   register: uri_update_name
 
 - debug: var=uri_update_name
-  when: debug is defined
+  verbosity: 2
 
 - name: Service Template Lookup (Catalog Item Lookup)
   uri:
@@ -114,7 +115,7 @@
   register: service
 
 - debug: var=service
-  when: debug is defined
+  verbosity: 2
 
 - name: Query Tags from Service Template
   uri:
@@ -130,10 +131,10 @@
   register: service_template_tags
 
 - debug: var=service_template_tags.json.subcount
-  when: debug is defined
+  verbosity: 2
 
 - debug: var=service_template_tags.json.resources
-  when: debug is defined
+  verbosity: 2
 
 - name: Assign Tags to Service
   uri:
@@ -154,7 +155,7 @@
   when: service_template_tags.json.subcount > 0
 
 - debug: var=service_assign
-  when: debug is defined
+  verbosity: 2
 
 #- name: Add Tags to VM
 #  uri:
@@ -175,4 +176,4 @@
 #  when: service_template_tags.json.subcount > 0
 #
 #- debug: var=uri_assign_tag
-#  when: debug is defined
+#  verbosity: 2

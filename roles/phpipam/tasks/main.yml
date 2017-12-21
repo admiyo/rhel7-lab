@@ -1,21 +1,4 @@
 ---
-- name: Convert host_csv to Array
-  set_fact:
-    hostnames: "{{ host_csv.split(',') }}"
-
-- debug: var=hostnames
-
-- name: Get Host Array Length
-  set_fact:
-    number_vms: "{{ hostnames | length }}"
-
-- debug: var=number_vms
-
-- name: Fail if number_vms > 5
-  fail:
-    msg: "Number of VMs too large: {{ number_vms }}"
-  when: number_vms | int > 5
-
 - name: Generate phpipam Token
   uri:
     url: "http://{{ php_ipam_hostname }}/api/{{ php_ipam_api_user }}/user/"
@@ -27,7 +10,7 @@
   register: session
 
 - debug: var=session.json.data.token
-  when: debug is defined
+  verbosity: 2
 
 - name: Get IPs
   uri:
@@ -40,6 +23,7 @@
   with_sequence: count={{ number_vms }}
 
 - debug: var=get_ip.results
+  verbosity: 2
 
 - name: Build IP List
   set_fact:
@@ -47,3 +31,4 @@
   with_items: "{{ get_ip.results }}"
 
 - debug: var=ip_addresses
+  verbosity: 2

@@ -1,6 +1,9 @@
 ---
 - debug: var=hostnames[0]
+  verbosity: 2
+
 - debug: var=ip_addresses[0]
+  verbosity: 2
 
 - name: Build Inventory
   add_host:

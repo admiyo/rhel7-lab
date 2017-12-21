@@ -1,0 +1,9 @@
+---
+- name: Populate In-Memory Inventory
+  add_host:
+    hostname: "{{ item.0 }}"
+    ansible_ssh_host: "{{ item.1 }}"
+    groups: dynamic_inventory
+  with_together:
+    - "{{ hostnames }}"
+    - "{{ ip_addresses }}"
