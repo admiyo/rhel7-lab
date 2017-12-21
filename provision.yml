@@ -1,6 +1,6 @@
 ---
-- name: Provision VM(s)
-  hosts: localhost
+- hosts: localhost
+  name: Provision VM(s)
   connection: local
   gather_facts: false
 
@@ -30,3 +30,13 @@
     - role: idm
     - role: rhv
     - { role: manageiq, when: manageiq is defined }
+
+# Example for use with dynamic_inventory (probably more suitable as another role)
+#- hosts: dynamic_inventory
+#  name: Configure VM(s)
+#
+#  tasks:
+#    - name: Ensure SELinux is enabled/enforcing
+#      selinux:
+#        policy: targeted
+#        state: enforcing
