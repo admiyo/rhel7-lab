@@ -1,12 +1,38 @@
 ---
-- name: Provision Tower Instance in SA Lab
+- name: Provision Tower Instance
   hosts: localhost
   connection: local
   gather_facts: false
-  
+
+  pre_tasks:
+    - name: Convert host_csv to Array
+      set_fact:
+        hostnames: "{{ host_csv.split(',') }}"
+
+    - debug: var=hostnames
+      verbosity: 2
+
+    - name: Get Host Array Length
+      set_fact:
+        number_vms: "{{ hostnames | length }}"
+
+    - debug: var=number_vms
+      verbosity: 2
+
+    - name: Fail if number_vms > 1
+      fail:
+        msg: "Number of VMs too large: {{ number_vms }}"
+      when: number_vms | int > 1
+
   roles:
     - role: phpipam
+    - role: dynamic_hostgroup
     - role: idm
     - role: rhv
     - { role: manageiq, when: manageiq is defined }
+  
+- name: Install Tower
+  hosts: dynamic_inventory
+
+  roles:
     - role: tower
