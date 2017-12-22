@@ -14,7 +14,8 @@ Naturally we are cloning templates as part of the provisioning process. For the 
 
 1. cloud-init and ipa-client packages installed
 2. The cloud-init daemon enabled and running
-3. The firewalld  daemon should be enabled and running. Also, ssh should be blocked by default. Once the ipa-client-install command has successfully completed, we will re-enable ssh on the firewall using the cloud-cfg script and firewall-cmd. This is done to ensure the system is properly registered to IdM before the wait_for module is called.
+~~3. The firewalld  daemon should be enabled and running. Also, ssh should be blocked by default. Once the ipa-client-install command has successfully completed, we will re-enable ssh on the firewall using the cloud-cfg script and firewall-cmd. This is done to ensure the system is properly registered to IdM before the wait_for module is called.~~
+3. TODO: Rework #3 using wait_for_connection (this would remove asinine firewall requirements)
 
 ## Global Variables
 
