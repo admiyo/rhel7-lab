@@ -34,6 +34,9 @@ php_ipam_subnet_id: Subnet ID Used to Request Resources
 ipa_username: Username for IdM (needs administrator privileges)
 ipa_password: Password for IdM
 ipa_hostname: IdM FQDN (NOT API URL)
+host_dns_suffix: Used for Dynamic Inventory and build_ocp Roles
+host_dns_id: Used for Dynamic Inventory and build_ocp Roles (unique ID to support multiple simultaneous environments)
+ocp_call_byo_playbooks: false (Should always be false as BYO playbooks have not yet been incorporated)
 ```
 
 ## Example Playbook
