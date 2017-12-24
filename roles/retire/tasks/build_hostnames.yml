@@ -13,10 +13,10 @@
 - debug: var=number_vms
   verbosity: 2
 
-- name: Fail if number_vms > 5
+- name: Fail if number_vms > 10
   fail:
     msg: "Number of VMs too large: {{ number_vms }}"
-  when: number_vms | int > 5
+  when: number_vms | int > 10
 
 - set_fact:
     vm_hostnames: "{{ hostnames }}"
