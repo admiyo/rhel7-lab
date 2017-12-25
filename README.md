@@ -69,7 +69,7 @@ ocp_call_byo_playbooks: false (Should always be false as BYO playbooks have not 
 
   roles:
     - role: phpipam
-    - role: dynamic_hostgroup
+    - role: dynamic_inventory
     - role: idm
     - role: rhv
     - { role: manageiq, when: manageiq is defined }
