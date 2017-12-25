@@ -1,5 +1,5 @@
 ---
-- name: Provision VM
+- name: Retire VM(s)
   hosts: localhost
   connection: local
   gather_facts: false

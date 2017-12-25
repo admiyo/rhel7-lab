@@ -1,0 +1,47 @@
+---
+- name: Populate masters Group
+  add_host:
+    name: "{{ item.0 }}"
+    hostname: "{{ item.0 }}"
+    ansible_ssh_host: "{{ item.1 }}"
+    groups: masters
+  with_together:
+    - "{{ hostnames }}"
+    - "{{ ip_addresses }}"
+  when: item.0 | search("master")
+
+- debug:
+    var: groups
+    verbosity: 2
+
+- name: Populate etcd Group
+  add_host:
+    name: "{{ item.0 }}"
+    hostname: "{{ item.0 }}"
+    ansible_ssh_host: "{{ item.1 }}"
+    groups: etcd
+  with_together:
+    - "{{ hostnames }}"
+    - "{{ ip_addresses }}"
+  when: item.0 | search("etcd")
+
+- debug:
+    var: groups
+    verbosity: 2
+
+# TODO: handle infra/node region labels
+# #####################################
+- name: Populate nodes Group
+  add_host:
+    name: "{{ item.0 }}"
+    hostname: "{{ item.0 }}"
+    ansible_ssh_host: "{{ item.1 }}"
+    groups: nodes
+  with_together:
+    - "{{ hostnames }}"
+    - "{{ ip_addresses }}"
+  when: item.0 | search("node")
+
+- debug:
+    var: groups
+    verbosity: 2
