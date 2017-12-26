@@ -10,10 +10,6 @@
     - "{{ ip_addresses }}"
   when: item.0 | search("master")
 
-- debug:
-    var: groups
-    verbosity: 2
-
 - name: Populate etcd Group
   add_host:
     name: "{{ item.0 }}"
@@ -25,23 +21,34 @@
     - "{{ ip_addresses }}"
   when: item.0 | search("etcd")
 
-- debug:
-    var: groups
-    verbosity: 2
-
-# TODO: handle infra/node region labels
-# #####################################
-- name: Populate nodes Group
+- name: Populate Nodes Group (Only Include Infrastructure Nodes for Labeling)
   add_host:
     name: "{{ item.0 }}"
     hostname: "{{ item.0 }}"
     ansible_ssh_host: "{{ item.1 }}"
     groups: nodes
+    openshift_node_labels: "{'region': 'infra', 'zone': 'default'}"
   with_together:
     - "{{ hostnames }}"
     - "{{ ip_addresses }}"
-  when: item.0 | search("node")
+  when: (item.0 | search("node")) and (item.0 | search("infra"))
+
+- name: Populate Nodes Group (Only Include Non-Infrastructure Nodes for Labeling)
+  add_host:
+    name: "{{ item.0 }}"
+    hostname: "{{ item.0 }}"
+    ansible_ssh_host: "{{ item.1 }}"
+    groups: nodes
+    openshift_node_labels: "{'region': 'primary', 'zone': 'default'}"
+  with_together:
+    - "{{ hostnames }}"
+    - "{{ ip_addresses }}"
+  when: (item.0 | search("node")) and not (item.0 | search("infra"))
 
 - debug:
     var: groups
+    verbosity: 2
+
+- debug:
+    var: hostvars
     verbosity: 2
