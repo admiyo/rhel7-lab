@@ -9,8 +9,9 @@
     status_code: 200
   register: session
 
-- debug: var=session.json.data.token
-  verbosity: 2
+- debug:
+    var: session.json.data.token
+    verbosity: 2
 
 - name: Get IPs
   uri:
@@ -22,13 +23,15 @@
   register: get_ip
   with_sequence: count={{ number_vms }}
 
-- debug: var=get_ip.results
-  verbosity: 2
+- debug:
+    var: get_ip.results
+    verbosity: 2
 
 - name: Build IP List
   set_fact:
     ip_addresses: "{{ ip_addresses }} + [ '{{ item.json.data }}' ]"
   with_items: "{{ get_ip.results }}"
 
-- debug: var=ip_addresses
-  verbosity: 2
+- debug:
+    var: ip_addresses
+    verbosity: 2
