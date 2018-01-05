@@ -25,6 +25,29 @@
 - debug: var=session
   verbosity: 2
 
+- name: Create DNS Zone
+  uri:
+    url: "https://{{ ipa_hostname }}/ipa/session/json"
+    validate_certs: no
+    method: POST
+    status_code: 200
+    headers:
+      Cookie: "{{ session.set_cookie }}"
+      Accept: "application/json"
+      Referer: "https://{{ ipa_hostname }}/ipa"
+    body:
+      method: dnszone_add
+      params:
+      - - "{{ host_dns_id }}.{{ host_dns_suffix }}"
+      - {}
+    body_format: json
+  register: zone_add
+  failed_when: "zone_add.json.error is not none"
+  when: host_dns_id is defined
+
+- debug: var=zone_add
+  verbosity: 2
+
 - name: Create Host in IPA
   uri:
     url: "https://{{ ipa_hostname }}/ipa/session/json"

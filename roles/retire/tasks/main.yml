@@ -90,3 +90,21 @@
   register: host_del
   with_items: "{{ vm_hostnames }}"
 
+- name: Delete DNS Zone from IPA
+  uri:
+    url: "https://{{ ipa_hostname }}/ipa/session/json"
+    validate_certs: no
+    method: POST
+    status_code: 200
+    headers:
+      Cookie: "{{ session.set_cookie }}"
+      Accept: "application/json"
+      Referer: "https://{{ ipa_hostname }}/ipa"
+    body:
+      method: dnszone_del
+      params:
+      - - "{{ host_dns_id }}.{{ host_dns_suffix }}"
+      - {}
+    body_format: json
+  register: zone_del
+  when: "host_dns_id is defined"
