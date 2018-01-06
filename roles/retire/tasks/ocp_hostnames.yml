@@ -1,0 +1,18 @@
+---
+- name: Convert host_csv to Array
+  set_fact:
+    shortnames: "{{ host_csv.split(',') }}"
+    hostnames: []
+
+- debug:
+    var: shortnames
+    verbosity: 2
+
+- name: Convert shortnames to hostnames
+  set_fact:
+    hostnames: "{{ hostnames }} + ['{{ item }}.{{ host_dns_id }}.{{ host_dns_suffix }}']"
+  with_items:
+    - "{{ shortnames }}"
+
+- set_fact:
+    vm_hostnames: "{{ hostnames }}"

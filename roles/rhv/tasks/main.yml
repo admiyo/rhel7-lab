@@ -44,7 +44,7 @@
     host: "{{ item }}"
     port: 22
     delay: 15
-    timeout: 320
+    timeout: 640
     state: started
   register: wf
   with_items: "{{ ip_addresses }}"
