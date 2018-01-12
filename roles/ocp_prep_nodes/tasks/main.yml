@@ -1,0 +1,62 @@
+---
+- name: Bootstrap Satellite
+  yum:
+    name: "http://{{ satellite_hostname }}/pub/katello-ca-consumer-latest.noarch.rpm"
+    state: present
+    
+- name: Register with Satellite
+  redhat_subscription:
+    state: present
+    activationkey: "{{ satellite_activation_key }}"
+    org_id: "{{ satellite_org_id }}"
+
+- name: Install Packages for OpenShift
+  yum:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - wget
+    - git
+    - net-tools
+    - bind-utils
+    - iptables-services
+    - bridge-utils
+    - bash-completion
+    - kexec-tools
+    - sos
+    - psacct
+    - atomic-openshift-utils
+    - docker-1.12.6
+    - vim-enhanced
+    
+- name: yum update
+  yum:
+    name: '*'
+    state: latest
+
+- name: Setup /etc/sysconfig/docker
+  copy:
+    src: files/docker
+    dest: /etc/sysconfig/docker
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Setup /etc/sysconfig/docker-storage-setup
+  copy:
+    src: files/docker-storage-setup
+    dest: /etc/sysconfig/docker-storage-setup
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Configure Docker Storage
+  shell: /usr/bin/docker-storage-setup &>/tmp/docker-storage-setup.log
+  args:
+    creates: /tmp/docker-storage-setup.log
+
+- name: Enable & Start Docker Service
+  service:
+    name: docker
+    state: started
+    enabled: yes

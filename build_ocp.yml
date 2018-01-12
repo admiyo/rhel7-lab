@@ -48,4 +48,7 @@
   name: Deploy OpenShift v3.7 Using BYO
 
   roles:
-    - { role: ocp_call_byo, when: ocp_call_byo_playbooks is defined }
+    - { role: ocp_prep_nodes, when: ocp_call_byo_playbooks is defined }
+#    - { role: ocp_call_byo, when: ocp_call_byo_playbooks is defined }
+
+- import_playbook: /usr/share/ansible/openshift-ansible/playbooks/byo/config.yml

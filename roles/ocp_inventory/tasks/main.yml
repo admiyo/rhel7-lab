@@ -45,6 +45,17 @@
     - "{{ ip_addresses }}"
   when: (item.0 | search("node")) and not (item.0 | search("infra"))
 
+# Not sure why we need the following, see "Single Master, Multiple etcd, and Multiple Nodes Inventory File" in install docs as example
+- name: Populate Nodes Group (Only Include Masters with NO Labeling)
+  add_host:
+    name: "{{ item.0 }}"
+    hostname: "{{ item.1 }}"
+    groups: nodes
+  with_together:
+    - "{{ hostnames }}"
+    - "{{ ip_addresses }}"
+  when: item.0 | search("master")
+
 - debug:
     var: groups
     verbosity: 2
