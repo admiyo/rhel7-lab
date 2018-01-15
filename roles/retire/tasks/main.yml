@@ -10,6 +10,9 @@
 - include_tasks: "build_hostnames.yml"
   when: manageiq is not defined
 
+- include_tasks: "ocp_hostnames.yml"
+  when: host_dns_id is defined
+
 - debug: var=vm_hostnames
   verbosity: 2
 
@@ -90,3 +93,33 @@
   register: host_del
   with_items: "{{ vm_hostnames }}"
 
+- name: Delete DNS Zone from IPA
+  uri:
+    url: "https://{{ ipa_hostname }}/ipa/session/json"
+    validate_certs: no
+    method: POST
+    status_code: 200
+    headers:
+      Cookie: "{{ session.set_cookie }}"
+      Accept: "application/json"
+      Referer: "https://{{ ipa_hostname }}/ipa"
+    body:
+      method: dnszone_del
+      params:
+      - - "{{ host_dns_id }}.{{ host_dns_suffix }}"
+      - {}
+    body_format: json
+  register: zone_del
+  when: "host_dns_id is defined"
+
+- name: Delete Hosts from Satellite
+  uri:
+    url: "https://{{ satellite_hostname }}/api/hosts/{{ item }}"
+    method: DELETE
+    user: "{{ satellite_username }}"
+    password: "{{ satellite_password }}"
+    validate_certs: no
+    force_basic_auth: yes
+    code: 200
+  with_items:
+    - "{{ vm_hostnames }}"

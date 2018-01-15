@@ -45,7 +45,21 @@
     - { role: manageiq, when: manageiq is defined }
 
 - hosts: OSEv3
-  name: Deploy OpenShift v3.7 Using BYO
+  name: Prepare All Openshift Hosts
 
   roles:
-    - { role: ocp_call_byo, when: ocp_call_byo_playbooks is defined }
+    - role: ocp_prep_all
+
+- hosts: masters
+  name: Master Specific Configuration
+
+  roles:
+    - role: ocp_prep_masters
+
+- hosts: nodes
+  name: Node Specific Configuration
+
+  roles:
+    - role: ocp_prep_nodes
+
+- import_playbook: /usr/share/ansible/openshift-ansible/playbooks/byo/config.yml

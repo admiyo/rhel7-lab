@@ -1,0 +1,27 @@
+---
+- name: Setup /etc/sysconfig/docker
+  copy:
+    src: files/docker
+    dest: /etc/sysconfig/docker
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Setup /etc/sysconfig/docker-storage-setup
+  copy:
+    src: files/docker-storage-setup
+    dest: /etc/sysconfig/docker-storage-setup
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Configure Docker Storage
+  shell: /usr/bin/docker-storage-setup &>/tmp/docker-storage-setup.log
+  args:
+    creates: /tmp/docker-storage-setup.log
+
+- name: Enable & Start Docker Service
+  service:
+    name: docker
+    state: started
+    enabled: yes

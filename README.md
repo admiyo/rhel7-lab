@@ -1,11 +1,18 @@
-# RHEL 7 En Masse
+# RHEL 7 Lab - Provision Red Hat Products on RHEL 7
 ## Introduction
-This set of roles was written to support the provisioning of RHEL 7 en masse. Using this role it is trivial to provision 1 or 100 virtual machines. We support cleanup and retirement as well. The various roles currently provide integration with the following:
+This set of roles was written to support the bulk provisioning of RHEL 7 instances. Using this role it is trivial to provision 1 or 100 virtual machines. We support cleanup and retirement as well. The various roles currently provide integration with the following:
 
 - phpIPAM
 - IdM (FreeIPA)
 - CloudForms (ManageIQ)
 - RHV (oVirt)
+
+### Product Roles
+Building on-top of the core RHEL 7 Lab playbooks, there are several roles that can be used to install Red Hat products on-top of our newly minted instances. We currently support the following:
+
+- Ansible Tower
+- OpenShift (in-progress)
+- CloudForms (in-progress)
 
 ## Requirements
 Many of the modules we use require Ansible 2.4. We also require dnspython and python-ovirt-engine-sdk4 packages to be installed on the system that is executing the playbooks.
@@ -14,8 +21,8 @@ Naturally we are cloning templates as part of the provisioning process. For the 
 
 1. cloud-init and ipa-client packages installed
 2. The cloud-init daemon enabled and running
-~~3. The firewalld  daemon should be enabled and running. Also, ssh should be blocked by default. Once the ipa-client-install command has successfully completed, we will re-enable ssh on the firewall using the cloud-cfg script and firewall-cmd. This is done to ensure the system is properly registered to IdM before the wait_for module is called.~~
-3. TODO: Rework #3 using wait_for_connection (this would remove asinine firewall requirements)
+3. ~~The firewalld  daemon should be enabled and running. Also, ssh should be blocked by default. Once the ipa-client-install command has successfully completed, we will re-enable ssh on the firewall using the cloud-cfg script and firewall-cmd. This is done to ensure the system is properly registered to IdM before the wait_for module is called.~~
+4. TODO: Rework #3 using wait_for_connection (this would remove asinine firewall requirements)
 
 ## Global Variables
 
@@ -38,6 +45,28 @@ host_dns_suffix: Used for Dynamic Inventory and build_ocp Roles
 host_dns_id: Used for Dynamic Inventory and build_ocp Roles (unique ID to support multiple simultaneous environments)
 ocp_call_byo_playbooks: false (Should always be false as BYO playbooks have not yet been incorporated)
 ```
+
+## Integration Role Documentation
+
+### phpipam
+
+This role leverages the URI module to make a series of REST calls to phpipam. It also expects `number_vms` to be defined in the pre_tasks section of your initial play. Using the vaule defined in `number_vms`, Ansible will iterate through a sequence and make the appropriate number of REST calls until we have the required number of IPs. Lastly the role will build the `ip_addresses` list which can be used to form a syncronized list using `with_together`.
+
+### dynamic_inventory
+
+### idm
+
+### rhv
+
+### manageiq
+
+### retire
+
+## Product Role Documentation
+
+### tower (Ansible Tower)
+
+### ocp_inventory/ocp_call_byo (OpenShift v3.7)
 
 ## Example Playbook
 ```

@@ -1,0 +1,35 @@
+---
+- name: Bootstrap Satellite
+  yum:
+    name: "http://{{ satellite_hostname }}/pub/katello-ca-consumer-latest.noarch.rpm"
+    state: present
+
+- name: Register with Satellite
+  redhat_subscription:
+    state: present
+    activationkey: "{{ satellite_activation_key }}"
+    org_id: "{{ satellite_org_id }}"
+
+- name: Install Packages for OpenShift
+  yum:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - wget
+    - git
+    - net-tools
+    - bind-utils
+    - iptables-services
+    - bridge-utils
+    - bash-completion
+    - kexec-tools
+    - sos
+    - psacct
+    - atomic-openshift-utils
+    - docker-1.12.6
+    - vim-enhanced
+
+- name: yum update
+  yum:
+    name: '*'
+    state: latest

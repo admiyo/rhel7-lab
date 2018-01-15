@@ -1,0 +1,16 @@
+---
+- name: Ensure /etc/origin/master Directory Exists
+  file:
+    path: /etc/origin/master
+    state: directory
+    owner: root
+    group: root
+    mode: 0775
+
+- name: Copy htpasswd File
+  copy:
+    src: files/htpasswd
+    dest: /etc/origin/master/htpasswd
+    owner: root
+    group: root
+    mode: 0664
