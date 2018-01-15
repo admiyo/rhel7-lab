@@ -49,12 +49,24 @@
 - name: Populate Nodes Group (Only Include Masters with NO Labeling)
   add_host:
     name: "{{ item.0 }}"
-    hostname: "{{ item.1 }}"
+    hostname: "{{ item.0 }}"
+    ansible_ssh_host: "{{ item.1 }}"
     groups: nodes
   with_together:
     - "{{ hostnames }}"
     - "{{ ip_addresses }}"
   when: item.0 | search("master")
+
+- name: Populate NFS Group (Only Include master1 with NO Labeling)
+  add_host:
+    name: "{{ item.0 }}"
+    hostname: "{{ item.0 }}"
+    ansible_ssh_host: "{{ item.1 }}"
+    groups: nfs
+  with_together:
+    - "{{ hostnames }}"
+    - "{{ ip_addresses }}"
+  when: item.0 | search("master1")
 
 - debug:
     var: groups
