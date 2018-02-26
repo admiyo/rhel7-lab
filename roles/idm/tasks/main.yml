@@ -42,7 +42,7 @@
       - {}
     body_format: json
   register: zone_add
-  failed_when: "zone_add.json.error is not none"
+  failed_when: "zone_add.json.error is not none and zone_add.json.error.name != 'DuplicateEntry' "
   when: host_dns_id is defined
 
 - debug: var=zone_add
@@ -68,7 +68,7 @@
   with_together:
     - "{{ hostnames }}"
     - "{{ ip_addresses }}"
-  failed_when: "host_add.json.error is not none"
+  failed_when: "host_add.json.error is not none and host_add.json.error.name != 'DuplicateEntry'"
 
 - debug: var=host_add
   verbosity: 2
@@ -91,7 +91,7 @@
     body_format: json
   register: host_mod
   with_items: "{{ hostnames }}"
-  failed_when: "host_mod.json.error is not none"
+  failed_when: "host_mod.json.error is not none and host_mod.json.error.name != 'ValidationError'"
 
 - debug: var=host_mod.results
   verbosity: 2
